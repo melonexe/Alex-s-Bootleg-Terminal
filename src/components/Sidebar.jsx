@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { THEMES } from '../themes'
 
 const TYPE_ICON = {
   ssh: (
@@ -13,10 +14,15 @@ const TYPE_ICON = {
       <rect x="18" y="7" width="4" height="10" rx="1"/>
       <path d="M6 12h4M14 12h4"/>
     </svg>
+  ),
+  local: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 6l6 6-6 6M12 18h8"/>
+    </svg>
   )
 }
 
-export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete }) {
+export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete, onLocalTerminal, theme, onThemeChange }) {
   const [search, setSearch] = useState('')
   const [contextMenu, setContextMenu] = useState(null) // { x, y, conn }
 
@@ -47,21 +53,20 @@ export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete }
     >
       {/* Header */}
       <div style={{ padding: '10px 12px 8px', borderBottom: '1px solid var(--border)', WebkitAppRegion: 'no-drag' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent)' }}>Alex's Bootleg Terminal</span>
-          <button
-            onClick={onNew}
-            title="New connection"
-            style={{
-              marginLeft: 'auto', width: 24, height: 24, borderRadius: 'var(--radius-sm)',
-              background: 'var(--bg-hover)', color: 'var(--text-dim)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center'
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+          <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--accent)', flex: 1 }}>
+            Alex's Bootleg Terminal
+          </span>
+          <IconBtn onClick={onLocalTerminal} title="New local terminal (Ctrl+N)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M4 6l6 6-6 6M12 18h8"/>
+            </svg>
+          </IconBtn>
+          <IconBtn onClick={onNew} title="New connection">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M12 5v14M5 12h14"/>
             </svg>
-          </button>
+          </IconBtn>
         </div>
         <input
           placeholder="Search connections..."
@@ -86,6 +91,33 @@ export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete }
         )}
       </div>
 
+      {/* Theme picker */}
+      <div style={{
+        padding: '8px 12px', borderTop: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0
+      }}>
+        <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginRight: 2 }}>
+          Theme
+        </span>
+        {Object.entries(THEMES).map(([key, t]) => (
+          <button
+            key={key}
+            title={t.name}
+            onClick={() => onThemeChange(key)}
+            style={{
+              width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+              background: t.swatch,
+              outline: theme === key ? `2px solid var(--text)` : '2px solid transparent',
+              outlineOffset: 2,
+              transition: 'outline-color 0.15s, transform 0.12s',
+              transform: theme === key ? 'scale(1.2)' : 'scale(1)'
+            }}
+            onMouseEnter={e => { if (theme !== key) e.currentTarget.style.transform = 'scale(1.15)' }}
+            onMouseLeave={e => { if (theme !== key) e.currentTarget.style.transform = 'scale(1)' }}
+          />
+        ))}
+      </div>
+
       {/* Context menu */}
       {contextMenu && (
         <div
@@ -93,7 +125,8 @@ export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete }
             position: 'fixed', left: contextMenu.x, top: contextMenu.y,
             background: 'var(--bg-raised)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', padding: '4px 0', zIndex: 1000,
-            minWidth: 140, boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+            minWidth: 140, boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            animation: 'slide-down 0.12s ease-out both'
           }}
           onClick={e => e.stopPropagation()}
         >
@@ -104,6 +137,25 @@ export default function Sidebar({ connections, onOpen, onNew, onEdit, onDelete }
         </div>
       )}
     </div>
+  )
+}
+
+function IconBtn({ children, onClick, title }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      style={{
+        width: 24, height: 24, borderRadius: 'var(--radius-sm)',
+        background: 'var(--bg-hover)', color: 'var(--text-dim)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        transition: 'background 0.15s, color 0.15s'
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = '#fff' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-dim)' }}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -121,7 +173,7 @@ function Group({ label, items, onOpen, onContextMenu }) {
       >
         <svg
           width="10" height="10" viewBox="0 0 10 10" fill="currentColor"
-          style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}
+          style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s ease' }}
         >
           <path d="M3 2l4 3-4 3z"/>
         </svg>
@@ -142,10 +194,11 @@ function ConnItem({ conn, onOpen, onContextMenu }) {
       style={{
         padding: '6px 12px 6px 20px', cursor: 'pointer', display: 'flex',
         alignItems: 'center', gap: 8, borderRadius: 'var(--radius-sm)',
-        margin: '1px 6px', transition: 'background 0.1s'
+        margin: '1px 6px', transition: 'background 0.15s, transform 0.12s',
+        transform: 'translateX(0)'
       }}
-      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.transform = 'translateX(2px)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateX(0)' }}
     >
       <span style={{ color: 'var(--accent)', flexShrink: 0 }}>{TYPE_ICON[conn.type]}</span>
       <div style={{ overflow: 'hidden' }}>
@@ -166,7 +219,8 @@ function MenuItem({ children, onClick, danger }) {
       onClick={onClick}
       style={{
         width: '100%', padding: '6px 14px', textAlign: 'left', background: 'transparent',
-        color: danger ? 'var(--red)' : 'var(--text)', display: 'block'
+        color: danger ? 'var(--red)' : 'var(--text)', display: 'block',
+        transition: 'background 0.1s'
       }}
       onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}

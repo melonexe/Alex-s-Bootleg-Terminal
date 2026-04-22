@@ -3,7 +3,7 @@ const path = require('path')
 const Store = require('electron-store')
 
 const store = new Store()
-const isDev = process.env.NODE_ENV !== 'production'
+const isDev = !app.isPackaged
 
 let mainWindow
 
@@ -39,6 +39,7 @@ app.whenReady().then(() => {
   createWindow()
   require('./ipc/ssh')(ipcMain, mainWindow, store)
   require('./ipc/serial')(ipcMain, mainWindow, store)
+  require('./ipc/local')(ipcMain, mainWindow)
 
   ipcMain.handle('store:get', (_, key) => store.get(key))
   ipcMain.handle('store:set', (_, key, val) => store.set(key, val))

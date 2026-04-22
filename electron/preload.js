@@ -19,9 +19,19 @@ contextBridge.exposeInMainWorld('api', {
   serialSend: (id, data) => ipcRenderer.invoke('serial:send', id, data),
   serialDisconnect: (id) => ipcRenderer.invoke('serial:disconnect', id),
 
+  // Local terminal
+  localStart: (opts) => ipcRenderer.invoke('local:start', opts),
+  localSend: (id, data) => ipcRenderer.invoke('local:send', id, data),
+  localResize: (id, cols, rows) => ipcRenderer.invoke('local:resize', id, cols, rows),
+  localDisconnect: (id) => ipcRenderer.invoke('local:disconnect', id),
+
   // Events (renderer listens to main push events)
   on: (channel, cb) => {
-    const allowed = ['ssh:data', 'ssh:close', 'ssh:hostKeyPrompt', 'serial:data', 'serial:close']
+    const allowed = [
+      'ssh:data', 'ssh:close', 'ssh:hostKeyPrompt',
+      'serial:data', 'serial:close',
+      'local:data', 'local:close'
+    ]
     if (allowed.includes(channel)) {
       const handler = (_, ...args) => cb(...args)
       ipcRenderer.on(channel, handler)

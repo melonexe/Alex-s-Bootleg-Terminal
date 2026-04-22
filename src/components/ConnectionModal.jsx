@@ -55,13 +55,15 @@ export default function ConnectionModal({ initial, onSave, onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 900
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 900,
+      animation: 'backdrop-in 0.15s ease-out'
     }} onClick={onClose}>
       <div
         style={{
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', width: 480, maxHeight: '90vh',
-          overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
+          overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          animation: 'modal-in 0.2s cubic-bezier(0.16,1,0.3,1) both'
         }}
         onClick={e => e.stopPropagation()}
       >

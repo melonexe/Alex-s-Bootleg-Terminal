@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { WebLinksAddon } from '@xterm/addon-web-links'
@@ -27,16 +27,21 @@ const THEME = {
   brightWhite:   '#f8fafc'
 }
 
-export default function TerminalPane({ tab, active, onStatusChange }) {
+export default function TerminalPane({ tab, active, onStatusChange, termTheme }) {
   const containerRef = useRef(null)
   const termRef = useRef(null)
   const fitRef = useRef(null)
-  const connectedRef = useRef(false)
 
-  // Boot terminal and connect
+  // Update terminal colors when the app theme changes
+  useEffect(() => {
+    if (termRef.current && termTheme) {
+      termRef.current.options.theme = termTheme
+    }
+  }, [termTheme])
+
   useEffect(() => {
     const term = new Terminal({
-      theme: THEME,
+      theme: termTheme || THEME,
       fontFamily: '"Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace',
       fontSize: 13,
       lineHeight: 1.4,
@@ -53,16 +58,21 @@ export default function TerminalPane({ tab, active, onStatusChange }) {
     termRef.current = term
     fitRef.current = fit
 
-    // Connect
     const { conn, id, type } = tab
     connect(id, type, conn, term, fit, onStatusChange)
 
-    // Cleanup
     return () => {
       term.dispose()
       termRef.current = null
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-focus when this pane becomes active
+  useEffect(() => {
+    if (active && termRef.current) {
+      termRef.current.focus()
+    }
+  }, [active])
 
   // Resize observer
   useEffect(() => {
@@ -72,6 +82,7 @@ export default function TerminalPane({ tab, active, onStatusChange }) {
         fitRef.current.fit()
         const { cols, rows } = termRef.current
         if (tab.type === 'ssh') window.api.sshResize(tab.id, cols, rows).catch(() => {})
+        else if (tab.type === 'local') window.api.localResize(tab.id, cols, rows).catch(() => {})
       }
     })
     ro.observe(containerRef.current)
@@ -91,6 +102,31 @@ export default function TerminalPane({ tab, active, onStatusChange }) {
 }
 
 async function connect(id, type, conn, term, fit, onStatusChange) {
+  if (type === 'local') {
+    const offData = window.api.on('local:data', (sessionId, data) => {
+      if (sessionId === id) term.write(data)
+    })
+    const offClose = window.api.on('local:close', (sessionId, reason) => {
+      if (sessionId !== id) return
+      term.write(`\r\n\x1b[33m[Session ended${reason ? ': ' + reason : ''}]\x1b[0m\r\n`)
+      onStatusChange(id, 'closed')
+      offData?.(); offClose?.()
+    })
+
+    try {
+      fit.fit()
+      const { cols, rows } = term
+      await window.api.localStart({ id, cols, rows })
+      onStatusChange(id, 'connected')
+      term.onData(data => window.api.localSend(id, data))
+    } catch (err) {
+      term.write(`\x1b[31mFailed to start terminal: ${err}\x1b[0m\r\n`)
+      onStatusChange(id, 'error')
+      offData?.(); offClose?.()
+    }
+    return
+  }
+
   term.write('\x1b[90mConnecting…\x1b[0m\r\n')
 
   const offData = window.api.on(type === 'ssh' ? 'ssh:data' : 'serial:data', (sessionId, data) => {
@@ -101,8 +137,7 @@ async function connect(id, type, conn, term, fit, onStatusChange) {
     if (sessionId !== id) return
     term.write(`\r\n\x1b[33m[Connection closed${reason ? ': ' + reason : ''}]\x1b[0m\r\n`)
     onStatusChange(id, 'closed')
-    offData?.()
-    offClose?.()
+    offData?.(); offClose?.()
   })
 
   try {
@@ -134,7 +169,6 @@ async function connect(id, type, conn, term, fit, onStatusChange) {
     const { cols, rows } = term
     if (type === 'ssh') window.api.sshResize(id, cols, rows).catch(() => {})
 
-    // Input → main
     term.onData(data => {
       if (type === 'ssh') window.api.sshSend(id, data)
       else window.api.serialSend(id, data)
@@ -144,9 +178,7 @@ async function connect(id, type, conn, term, fit, onStatusChange) {
     if (err !== 'HOST_KEY_PENDING') {
       term.write(`\x1b[31mFailed: ${err}\x1b[0m\r\n`)
       onStatusChange(id, 'error')
-      offData?.()
-      offClose?.()
+      offData?.(); offClose?.()
     }
-    // If host key is pending, the HostKeyModal takes over; we don't clean up yet
   }
 }

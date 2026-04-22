@@ -76,9 +76,12 @@ function Overlay({ children }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999,
+      animation: 'backdrop-in 0.15s ease-out'
     }}>
-      {children}
+      <div style={{ animation: 'modal-in 0.2s cubic-bezier(0.16,1,0.3,1) both' }}>
+        {children}
+      </div>
     </div>
   )
 }
