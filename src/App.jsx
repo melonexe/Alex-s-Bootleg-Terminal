@@ -5,6 +5,7 @@ import TerminalPane from './components/TerminalPane'
 import ConnectionModal from './components/ConnectionModal'
 import HostKeyModal from './components/HostKeyModal'
 import PacketCaptureSidebar from './components/PacketCaptureSidebar'
+import NetworkConfigSidebar from './components/NetworkConfigSidebar'
 import { loadConnections, saveConnections } from './store/connections'
 import { THEMES, applyTheme } from './themes'
 import { v4 as uuid } from 'uuid'
@@ -18,6 +19,7 @@ export default function App() {
   const [hostKeyPrompt, setHostKeyPrompt] = useState(null)
   const [theme, setTheme] = useState('default')
   const [pcapOpen, setPcapOpen] = useState(false)
+  const [netOpen, setNetOpen] = useState(false)
 
   useEffect(() => {
     loadConnections().then(setConnections)
@@ -142,6 +144,8 @@ export default function App() {
             onClose={closeTab}
             pcapOpen={pcapOpen}
             onTogglePcap={() => setPcapOpen(o => !o)}
+            netOpen={netOpen}
+            onToggleNet={() => setNetOpen(o => !o)}
           />
 
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -162,6 +166,10 @@ export default function App() {
                 />
               ))}
             </div>
+            <NetworkConfigSidebar
+              isOpen={netOpen}
+              onToggle={() => setNetOpen(false)}
+            />
             <PacketCaptureSidebar
               isOpen={pcapOpen}
               onToggle={() => setPcapOpen(false)}

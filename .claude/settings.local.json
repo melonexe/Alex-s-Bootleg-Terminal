@@ -7,7 +7,9 @@
       "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\electron-builder\\\\Cache\\\\winCodeSign\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, Mode)",
       "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\electron-builder\\\\Cache\\\\\" -ErrorAction SilentlyContinue | Select-Object Name)",
       "PowerShell(Test-Path \"$env:LOCALAPPDATA\\\\electron-builder\"; $env:LOCALAPPDATA)",
-      "PowerShell([System.IO.Directory]::GetDirectories\\(\"C:\\\\Users\\\\Alex.Carswell-Sharp\\\\AppData\\\\Local\\\\electron-builder\\\\Cache\\\\winCodeSign\"\\))"
+      "PowerShell([System.IO.Directory]::GetDirectories\\(\"C:\\\\Users\\\\Alex.Carswell-Sharp\\\\AppData\\\\Local\\\\electron-builder\\\\Cache\\\\winCodeSign\"\\))",
+      "Bash(taskkill /F /IM \"Alex's Bootleg Terminal.exe\")",
+      "Bash(taskkill /F /IM \"electron.exe\")"
     ]
   }
 }

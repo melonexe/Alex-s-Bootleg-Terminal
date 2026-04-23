@@ -7,14 +7,15 @@ const STATUS_COLOR = {
   closed:     'var(--text-muted)'
 }
 
-export default function TabBar({ tabs, activeTab, onSelect, onClose, pcapOpen, onTogglePcap }) {
+export default function TabBar({ tabs, activeTab, onSelect, onClose, pcapOpen, onTogglePcap, netOpen, onToggleNet }) {
   if (tabs.length === 0) {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
         background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)',
-        height: 36, flexShrink: 0, WebkitAppRegion: 'no-drag', padding: '0 6px'
+        height: 36, flexShrink: 0, WebkitAppRegion: 'no-drag', padding: '0 6px', gap: 4
       }}>
+        <NetToggle active={netOpen} onClick={onToggleNet} />
         <PcapToggle active={pcapOpen} onClick={onTogglePcap} />
       </div>
     )
@@ -77,10 +78,39 @@ export default function TabBar({ tabs, activeTab, onSelect, onClose, pcapOpen, o
         )
       })}
       </div>
-      <div style={{ flexShrink: 0, padding: '0 6px', borderLeft: '1px solid var(--border)', height: '100%', display: 'flex', alignItems: 'center' }}>
+      <div style={{ flexShrink: 0, padding: '0 6px', borderLeft: '1px solid var(--border)', height: '100%', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <NetToggle active={netOpen} onClick={onToggleNet} />
         <PcapToggle active={pcapOpen} onClick={onTogglePcap} />
       </div>
     </div>
+  )
+}
+
+function NetToggle({ active, onClick }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      title={active ? 'Close adapter config' : 'Open adapter config'}
+      style={{
+        width: 28, height: 28, borderRadius: 'var(--radius-sm)',
+        background: active ? 'var(--accent-dim)' : hov ? 'var(--bg-hover)' : 'transparent',
+        color: active ? 'var(--accent)' : hov ? 'var(--text)' : 'var(--text-muted)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background 0.12s, color 0.12s',
+        outline: active ? '1px solid var(--accent)' : 'none',
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="2" width="6" height="6" rx="1"/>
+        <rect x="16" y="2" width="6" height="6" rx="1"/>
+        <rect x="9" y="16" width="6" height="6" rx="1"/>
+        <path d="M5 8v3a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V8"/>
+        <path d="M12 12v4"/>
+      </svg>
+    </button>
   )
 }
 

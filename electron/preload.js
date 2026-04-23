@@ -25,6 +25,10 @@ contextBridge.exposeInMainWorld('api', {
   localResize: (id, cols, rows) => ipcRenderer.invoke('local:resize', id, cols, rows),
   localDisconnect: (id) => ipcRenderer.invoke('local:disconnect', id),
 
+  // Network adapter config
+  netconfigList: () => ipcRenderer.invoke('netconfig:list'),
+  netconfigApply: (opts) => ipcRenderer.invoke('netconfig:apply', opts),
+
   // Packet capture
   pcapCheck: () => ipcRenderer.invoke('pcap:check'),
   pcapListInterfaces: () => ipcRenderer.invoke('pcap:list-interfaces'),

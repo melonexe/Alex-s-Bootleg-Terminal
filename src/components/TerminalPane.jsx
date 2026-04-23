@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import '@xterm/xterm/css/xterm.css'
+import { highlightChunk } from '../utils/highlight'
 
 const THEME = {
   background:    '#0f1117',
@@ -130,7 +131,7 @@ async function connect(id, type, conn, term, fit, onStatusChange) {
   term.write('\x1b[90mConnecting…\x1b[0m\r\n')
 
   const offData = window.api.on(type === 'ssh' ? 'ssh:data' : 'serial:data', (sessionId, data) => {
-    if (sessionId === id) term.write(data)
+    if (sessionId === id) term.write(highlightChunk(data))
   })
 
   const offClose = window.api.on(type === 'ssh' ? 'ssh:close' : 'serial:close', (sessionId, reason) => {
