@@ -25,12 +25,19 @@ contextBridge.exposeInMainWorld('api', {
   localResize: (id, cols, rows) => ipcRenderer.invoke('local:resize', id, cols, rows),
   localDisconnect: (id) => ipcRenderer.invoke('local:disconnect', id),
 
+  // Packet capture
+  pcapCheck: () => ipcRenderer.invoke('pcap:check'),
+  pcapListInterfaces: () => ipcRenderer.invoke('pcap:list-interfaces'),
+  pcapStart: (opts) => ipcRenderer.invoke('pcap:start', opts),
+  pcapStop: () => ipcRenderer.invoke('pcap:stop'),
+
   // Events (renderer listens to main push events)
   on: (channel, cb) => {
     const allowed = [
       'ssh:data', 'ssh:close', 'ssh:hostKeyPrompt',
       'serial:data', 'serial:close',
-      'local:data', 'local:close'
+      'local:data', 'local:close',
+      'pcap:packets', 'pcap:error', 'pcap:stopped',
     ]
     if (allowed.includes(channel)) {
       const handler = (_, ...args) => cb(...args)

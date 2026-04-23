@@ -40,6 +40,7 @@ app.whenReady().then(() => {
   require('./ipc/ssh')(ipcMain, mainWindow, store)
   require('./ipc/serial')(ipcMain, mainWindow, store)
   require('./ipc/local')(ipcMain, mainWindow)
+  require('./ipc/pcap')(ipcMain, mainWindow)
 
   ipcMain.handle('store:get', (_, key) => store.get(key))
   ipcMain.handle('store:set', (_, key, val) => store.set(key, val))

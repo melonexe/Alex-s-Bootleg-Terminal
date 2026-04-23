@@ -4,6 +4,7 @@ import TabBar from './components/TabBar'
 import TerminalPane from './components/TerminalPane'
 import ConnectionModal from './components/ConnectionModal'
 import HostKeyModal from './components/HostKeyModal'
+import PacketCaptureSidebar from './components/PacketCaptureSidebar'
 import { loadConnections, saveConnections } from './store/connections'
 import { THEMES, applyTheme } from './themes'
 import { v4 as uuid } from 'uuid'
@@ -16,6 +17,7 @@ export default function App() {
   const [editingConn, setEditingConn] = useState(null)
   const [hostKeyPrompt, setHostKeyPrompt] = useState(null)
   const [theme, setTheme] = useState('default')
+  const [pcapOpen, setPcapOpen] = useState(false)
 
   useEffect(() => {
     loadConnections().then(setConnections)
@@ -138,24 +140,32 @@ export default function App() {
             activeTab={activeTab}
             onSelect={setActiveTab}
             onClose={closeTab}
+            pcapOpen={pcapOpen}
+            onTogglePcap={() => setPcapOpen(o => !o)}
           />
 
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'var(--bg-base)' }}>
-            {tabs.length === 0 && (
-              <EmptyState
-                onNew={() => { setEditingConn(null); setModalOpen(true) }}
-                onLocalTerminal={openLocalTerminal}
-              />
-            )}
-            {tabs.map(tab => (
-              <TerminalPane
-                key={tab.id}
-                tab={tab}
-                active={tab.id === activeTab}
-                onStatusChange={updateTabStatus}
-                termTheme={termTheme}
-              />
-            ))}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'var(--bg-base)' }}>
+              {tabs.length === 0 && (
+                <EmptyState
+                  onNew={() => { setEditingConn(null); setModalOpen(true) }}
+                  onLocalTerminal={openLocalTerminal}
+                />
+              )}
+              {tabs.map(tab => (
+                <TerminalPane
+                  key={tab.id}
+                  tab={tab}
+                  active={tab.id === activeTab}
+                  onStatusChange={updateTabStatus}
+                  termTheme={termTheme}
+                />
+              ))}
+            </div>
+            <PacketCaptureSidebar
+              isOpen={pcapOpen}
+              onToggle={() => setPcapOpen(false)}
+            />
           </div>
         </div>
       </div>

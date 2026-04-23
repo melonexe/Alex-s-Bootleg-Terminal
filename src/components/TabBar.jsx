@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const STATUS_COLOR = {
   connecting: 'var(--yellow)',
@@ -7,15 +7,26 @@ const STATUS_COLOR = {
   closed:     'var(--text-muted)'
 }
 
-export default function TabBar({ tabs, activeTab, onSelect, onClose }) {
-  if (tabs.length === 0) return null
+export default function TabBar({ tabs, activeTab, onSelect, onClose, pcapOpen, onTogglePcap }) {
+  if (tabs.length === 0) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+        background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)',
+        height: 36, flexShrink: 0, WebkitAppRegion: 'no-drag', padding: '0 6px'
+      }}>
+        <PcapToggle active={pcapOpen} onClick={onTogglePcap} />
+      </div>
+    )
+  }
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', overflowX: 'auto',
+      display: 'flex', alignItems: 'center',
       background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)',
-      height: 36, flexShrink: 0, WebkitAppRegion: 'no-drag'
+      height: 36, flexShrink: 0, WebkitAppRegion: 'no-drag', overflow: 'hidden'
     }}>
+      <div style={{ flex: 1, display: 'flex', overflowX: 'auto', height: '100%', alignItems: 'center' }}>
       {tabs.map(tab => {
         const active = tab.id === activeTab
         return (
@@ -65,6 +76,36 @@ export default function TabBar({ tabs, activeTab, onSelect, onClose }) {
           </div>
         )
       })}
+      </div>
+      <div style={{ flexShrink: 0, padding: '0 6px', borderLeft: '1px solid var(--border)', height: '100%', display: 'flex', alignItems: 'center' }}>
+        <PcapToggle active={pcapOpen} onClick={onTogglePcap} />
+      </div>
     </div>
+  )
+}
+
+function PcapToggle({ active, onClick }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      title={active ? 'Close packet capture' : 'Open packet capture'}
+      style={{
+        width: 28, height: 28, borderRadius: 'var(--radius-sm)',
+        background: active ? 'var(--accent-dim)' : hov ? 'var(--bg-hover)' : 'transparent',
+        color: active ? 'var(--accent)' : hov ? 'var(--text)' : 'var(--text-muted)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background 0.12s, color 0.12s',
+        outline: active ? '1px solid var(--accent)' : 'none',
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        <path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+      </svg>
+    </button>
   )
 }
